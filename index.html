@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Học Cùng Ann - Flashcard Đa Ngôn Ngữ</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .glass-panel { background: rgba(15, 23, 42, 0.78); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+    .tab-active { border-bottom: 2px solid #818cf8; color: #818cf8; font-weight: 700; }
+    #quiz-container { transition: all 0.3s ease-in-out; }
+    .hsk-filter-btn { transition: all 0.2s ease; }
+    ::-webkit-scrollbar { height: 6px; width: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); }
+    ::-webkit-scrollbar-thumb { background: rgba(129, 140, 248, 0.3); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(129, 140, 248, 0.6); }
+  </style>
+</head>
+<body id="app-body" class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col bg-cover bg-center bg-fixed transition-all duration-500">
+
+  <header class="bg-slate-900/85 backdrop-blur-md shadow-lg sticky top-0 z-20 border-b border-slate-800">
+    <div class="max-w-4xl mx-auto px-3 sm:px-4 flex flex-col sm:flex-row justify-between items-center py-2 sm:h-16 gap-2 sm:gap-0">
+      <div class="flex items-center justify-between w-full sm:w-auto">
+        <h1 class="text-base sm:text-xl font-bold text-indigo-400 flex items-center">
+          <i class="fa-solid fa-layer-group mr-2"></i>Học Cùng Ann
+        </h1>
+      </div>
+      <nav class="flex space-x-1 sm:space-x-3 items-center w-full sm:w-auto justify-around sm:justify-end overflow-x-auto pb-1 sm:pb-0">
+        <button id="btn-tab-input" onclick="switchTab('input')" class="py-2 px-2.5 sm:py-4 sm:px-3 tab-active transition-colors text-xs sm:text-sm font-semibold whitespace-nowrap">
+          <i class="fa-solid fa-pen-to-square mr-1"></i> Nhập liệu
+        </button>
+        <button id="btn-tab-quiz" onclick="switchTab('quiz')" class="py-2 px-2.5 sm:py-4 sm:px-3 text-slate-400 hover:text-indigo-400 transition-colors text-xs sm:text-sm font-semibold whitespace-nowrap">
+          <i class="fa-solid fa-clone mr-1"></i> Flashcard
+        </button>
+        <button id="btn-tab-background" onclick="switchTab('background')" class="py-2 px-2.5 sm:py-4 sm:px-3 text-slate-400 hover:text-indigo-400 transition-colors text-xs sm:text-sm font-semibold whitespace-nowrap">
+          <i class="fa-solid fa-image mr-1"></i> Đổi nền
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-6 flex-1 w-full space-y-4 sm:space-y-6">
+    <section id="tab-input" class="space-y-4 sm:space-y-6">
+      <div class="glass-panel p-4 sm:p-6 rounded-2xl shadow-xl border border-white/10">
+        <div class="flex justify-between items-center mb-3 sm:mb-4">
+          <h2 class="text-sm sm:text-lg font-bold text-slate-100 flex items-center">
+            <i class="fa-solid fa-plus-circle text-indigo-400 mr-2"></i> Thêm từ vựng mới
+          </h2>
+          <span class="text-[11px] sm:text-xs text-emerald-400 whitespace-nowrap"><i class="fa-solid fa-circle-check mr-1"></i>Online Translate Active</span>
+        </div>
+
+        <form id="vocab-form" onsubmit="addVocabulary(event)" class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+          <div class="md:col-span-2">
+            <label class="block text-xs sm:text-sm font-medium text-slate-300 mb-1">Tiếng Việt (*)</label>
+            <div class="flex flex-col sm:flex-row gap-2">
+              <input type="text" id="vi" required placeholder="Ví dụ: Xin chào, Tình yêu..." class="w-full bg-slate-900/60 border border-slate-700 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-400 outline-none text-sm text-slate-100 placeholder-slate-500">
+              <button type="button" id="btn-translate" onclick="fetchOnlineTranslation()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap shadow transition-colors flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-globe"></i> Dịch Online Ngay
+              </button>
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs sm:text-sm font-medium text-slate-300 mb-1">Tiếng Trung (Hanzi) (*)</label>
+            <input type="text" id="zh" required placeholder="Đang tải online..." class="w-full bg-slate-900/60 border border-slate-700 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-400 outline-none text-sm text-slate-100 placeholder-slate-500">
+          </div>
+          <div>
+            <label class="block text-xs sm:text-sm font-medium text-slate-300 mb-1">Phiên âm (Pinyin)</label>
+            <input type="text" id="pinyin" placeholder="Pinyin..." class="w-full bg-slate-900/60 border border-slate-700 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-400 outline-none text-sm text-slate-100 placeholder-slate-500">
+          </div>
+          <div>
+            <label class="block text-xs sm:text-sm font-medium text-slate-300 mb-1">Tiếng Anh (*)</label>
+            <input type="text" id="en" required placeholder="English..." class="w-full bg-slate-900/60 border border-slate-700 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-400 outline-none text-sm text-slate-100 placeholder-slate-500">
+          </div>
+          <div>
+            <label class="block text-xs sm:text-sm font-medium text-slate-300 mb-1">Tiếng Đức (*)</label>
+            <input type="text" id="de" required placeholder="Deutsch..." class="w-full bg-slate-900/60 border border-slate-700 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-400 outline-none text-sm text-slate-100 placeholder-slate-500">
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-xs sm:text-sm font-medium text-slate-300 mb-1">Cấp độ HSK (*)</label>
+            <select id="hsk" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100 focus:ring-2 focus:ring-indigo-400 outline-none">
+              <option value="HSK1">HSK 1</option><option value="HSK2">HSK 2</option><option value="HSK3">HSK 3</option><option value="HSK4">HSK 4</option><option value="HSK5">HSK 5</option><option value="HSK6">HSK 6</option>
+            </select>
+          </div>
+          <div class="md:col-span-2 pt-2">
+            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 sm:py-3 rounded-lg transition-colors shadow text-sm sm:text-base">
+              <i class="fa-solid fa-save mr-1"></i> Lưu từ vựng vào bộ nhớ
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="glass-panel p-4 sm:p-6 rounded-2xl shadow-xl border border-white/10">
+        <div class="flex justify-between items-center mb-3 sm:mb-4">
+          <h2 class="text-sm sm:text-lg font-bold text-slate-100">Danh sách từ đã lưu (<span id="vocab-count">0</span>)</h2>
+          <button onclick="clearAllData()" class="text-xs text-rose-400 hover:underline"><i class="fa-solid fa-trash mr-1"></i>Xóa tất cả</button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse min-w-[600px]">
+            <thead>
+              <tr class="border-b border-slate-700/60 bg-slate-900/40 text-slate-300 text-[11px] uppercase font-semibold">
+                <th class="p-3">HSK</th><th class="p-3">Tiếng Trung</th><th class="p-3">Pinyin</th><th class="p-3">Tiếng Việt</th><th class="p-3">Tiếng Anh</th><th class="p-3">Tiếng Đức</th><th class="p-3 text-center">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="vocab-table-body" class="divide-y divide-slate-800 text-sm"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const defaultHSKDataset = [
+      { id: 101, zh: "你好", pinyin: "nǐ hǎo", vi: "Xin chào", en: "Hello", de: "Hallo", hsk: "HSK1" },
+      { id: 102, zh: "谢谢", pinyin: "xièxie", vi: "Cảm ơn", en: "Thank you", de: "Danke", hsk: "HSK1" }
+    ];
+    let vocabList = JSON.parse(localStorage.getItem('hoc_cung_ann_vocab')) || defaultHSKDataset;
+
+    // Hàm gọi API dịch thuật online trực tuyến (Ổn định tuyệt đối, không cần key)
+    async function translateText(text, targetLang) {
+      try {
+        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=vi&tl=${targetLang}&dt=t&q=` + encodeURIComponent(text);
+        const res = await fetch(url);
+        const json = await res.json();
+        return json[0].map(item => item[0]).join('');
+      } catch (e) {
+        return text;
+      }
+    }
+
+    async function fetchOnlineTranslation() {
+      const viInput = document.getElementById('vi');
+      const textVi = viInput.value.trim();
+      if (!textVi) { alert("Vui lòng nhập từ tiếng Việt cần dịch!"); viInput.focus(); return; }
+
+      const btn = document.getElementById('btn-translate');
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Đang dịch online...`;
+      btn.disabled = true;
+
+      try {
+        // Gọi đồng thời dịch sang Tiếng Trung (zh-CN), Tiếng Anh (en), Tiếng Đức (de)
+        const [zhText, enText, deText] = await Promise.all([
+          translateText(textVi, 'zh-CN'),
+          translateText(textVi, 'en'),
+          translateText(textVi, 'de')
+        ]);
+
+        document.getElementById('zh').value = zhText;
+        document.getElementById('en').value = enText;
+        document.getElementById('de').value = deText;
+        document.getElementById('pinyin').value = "tra cứu pinyin...";
+        document.getElementById('hsk').value = "HSK1";
+
+      } catch (err) {
+        alert("Lỗi dịch online: " + err.message);
+      } finally {
+        btn.innerHTML = `<i class="fa-solid fa-globe"></i> Dịch Online Ngay`;
+        btn.disabled = false;
+      }
+    }
+
+    function addVocabulary(e) {
+      e.preventDefault();
+      const newItem = {
+        id: Date.now(),
+        vi: document.getElementById('vi').value.trim(),
+        zh: document.getElementById('zh').value.trim(),
+        pinyin: document.getElementById('pinyin').value.trim(),
+        en: document.getElementById('en').value.trim(),
+        de: document.getElementById('de').value.trim(),
+        hsk: document.getElementById('hsk').value
+      };
+      vocabList.unshift(newItem);
+      localStorage.setItem('hoc_cung_ann_vocab', JSON.stringify(vocabList));
+      renderTable();
+      document.getElementById('vocab-form').reset();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('vocab-table-body');
+      const countEl = document.getElementById('vocab-count');
+      if (!tbody) return;
+      countEl.innerText = vocabList.length;
+      tbody.innerHTML = vocabList.map(item => `
+        <tr class="hover:bg-slate-800/40">
+          <td class="p-3"><span class="px-2 py-0.5 bg-indigo-950 text-indigo-300 border border-indigo-800 rounded text-xs">${item.hsk}</span></td>
+          <td class="p-3 font-bold text-slate-100">${item.zh}</td>
+          <td class="p-3 text-slate-400">${item.pinyin || '-'}</td>
+          <td class="p-3 text-slate-200">${item.vi}</td>
+          <td class="p-3 text-slate-200">${item.en}</td>
+          <td class="p-3 text-slate-200">${item.de}</td>
+          <td class="p-3 text-center"><button onclick="deleteItem(${item.id})" class="text-rose-400 hover:text-rose-300"><i class="fa-solid fa-trash-can"></i></button></td>
+        </tr>`).join('');
+    }
+
+    function deleteItem(id) {
+      vocabList = vocabList.filter(item => item.id !== id);
+      localStorage.setItem('hoc_cung_ann_vocab', JSON.stringify(vocabList));
+      renderTable();
+    }
+
+    function clearAllData() {
+      if (confirm('Xóa sạch toàn bộ từ vựng?')) {
+        vocabList = [];
+        localStorage.setItem('hoc_cung_ann_vocab', JSON.stringify(vocabList));
+        renderTable();
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', renderTable);
+  </script>
+</body>
+</html>
